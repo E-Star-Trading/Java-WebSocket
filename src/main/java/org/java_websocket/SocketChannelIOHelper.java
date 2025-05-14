@@ -88,8 +88,8 @@ public class SocketChannelIOHelper {
     ByteBuffer buffer = ws.outQueue.peek();
     WrappedByteChannel c = null;
 
-    if (ws.bulkByteBuffer != null) {
-      boolean finished = bulkWrite(ws, sockchannel);
+    if (ws.writeCoalescingBuffer != null) {
+      boolean finished = coalescingWrite(ws, sockchannel);
       if (!finished)
         return false;
     } else if (buffer == null) {
@@ -124,21 +124,21 @@ public class SocketChannelIOHelper {
    * Try to send multiple messages in one go if possible
    * @return true when there is no more data to send
    */
-  static boolean bulkWrite(WebSocketImpl ws, WritableByteChannel sockchannel) throws IOException {
+  static boolean coalescingWrite(WebSocketImpl ws, WritableByteChannel sockchannel) throws IOException {
     // Process existing bulked data first
-    if (ws.bulkReadMode && ws.bulkByteBuffer.hasRemaining()) {
-      sockchannel.write(ws.bulkByteBuffer);
-      if (ws.bulkByteBuffer.hasRemaining())
+    if (ws.writeCoalescingBufferFlipped && ws.writeCoalescingBuffer.hasRemaining()) {
+      sockchannel.write(ws.writeCoalescingBuffer);
+      if (ws.writeCoalescingBuffer.hasRemaining())
         return false;
-      ws.bulkByteBuffer.clear();
-      ws.bulkReadMode = false;
+      ws.writeCoalescingBuffer.clear();
+      ws.writeCoalescingBufferFlipped = false;
     }
 
     // Process new data
     ByteBuffer buffer = ws.outQueue.peek();
 
     // Check if the message is larger than the bulk buffer. If so, write it directly.
-    if (buffer != null && buffer.remaining() > ws.bulkByteBuffer.capacity()) {
+    if (buffer != null && buffer.remaining() > ws.writeCoalescingBuffer.capacity()) {
       sockchannel.write(buffer);
       if (buffer.remaining() > 0) // Message could not be written completely, process remaining data in next call
         return false;
@@ -148,17 +148,17 @@ public class SocketChannelIOHelper {
 
     // Bulk as many messages as possible and then write them
     while (buffer != null) {
-      ws.bulkByteBuffer.put(buffer);
+      ws.writeCoalescingBuffer.put(buffer);
       ws.outQueue.poll(); // Buffer completely cached, remove it
       buffer = ws.outQueue.peek();
-      if (buffer == null || buffer.remaining() > ws.bulkByteBuffer.capacity() - ws.bulkByteBuffer.position()) {
-        ws.bulkByteBuffer.flip();
-        ws.bulkReadMode = true;
-        sockchannel.write(ws.bulkByteBuffer);
-        if (ws.bulkByteBuffer.hasRemaining())
+      if (buffer == null || buffer.remaining() > ws.writeCoalescingBuffer.capacity() - ws.writeCoalescingBuffer.position()) {
+        ws.writeCoalescingBuffer.flip();
+        ws.writeCoalescingBufferFlipped = true;
+        sockchannel.write(ws.writeCoalescingBuffer);
+        if (ws.writeCoalescingBuffer.hasRemaining())
           return false; // Message could not be written completely, process remaining data in next call
-        ws.bulkByteBuffer.clear();
-        ws.bulkReadMode = false;
+        ws.writeCoalescingBuffer.clear();
+        ws.writeCoalescingBufferFlipped = false;
         return buffer == null;
       }
     }

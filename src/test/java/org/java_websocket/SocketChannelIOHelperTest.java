@@ -31,63 +31,63 @@ class SocketChannelIOHelperTest {
     }
 
     @Test
-    void bulkWriteSingleMessageFully() throws IOException {
+    void coalescingWriteSingleMessageFully() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}));
         channel = new RecorderChannel(10);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertTrue(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(4, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteSingleMessagePartially() throws IOException {
+    void coalescingWriteSingleMessagePartially() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6}));
         channel = new RecorderChannel(5);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(0, channel.capacity);
-        assertTrue(socket.bulkReadMode);
+        assertTrue(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteMultipleMessagesInBufferFully() throws IOException {
+    void coalescingWriteMultipleMessagesInBufferFully() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {4, 5, 6}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {7, 8, 9}));
         channel = new RecorderChannel(10);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertTrue(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(1, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteMultipleMessagesInBufferPartially() throws IOException {
+    void coalescingWriteMultipleMessagesInBufferPartially() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {4, 5, 6}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {7, 8, 9}));
         channel = new RecorderChannel(8);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(0, channel.capacity);
-        assertTrue(socket.bulkReadMode);
+        assertTrue(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteMultipleMessagesExceedingBuffer() throws IOException {
+    void coalescingWriteMultipleMessagesExceedingBuffer() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {4, 5, 6}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {7, 8, 9}));
@@ -95,153 +95,153 @@ class SocketChannelIOHelperTest {
         socket.outQueue.add(lastBuffer);
         channel = new RecorderChannel(10);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(1, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
         assertEquals(1, socket.outQueue.size());
         assertSame(lastBuffer, socket.outQueue.poll());
     }
 
     @Test
-    void bulkWriteSingleMessageExceedingBufferFully() throws IOException {
+    void coalescingWriteSingleMessageExceedingBufferFully() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}));
         channel = new RecorderChannel(15);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertTrue(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(3, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteSingleMessageExceedingBufferPartially() throws IOException {
+    void coalescingWriteSingleMessageExceedingBufferPartially() throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14});
         socket.outQueue.add(buffer);
         channel = new RecorderChannel(11);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(0, channel.capacity);
         assertEquals(3, buffer.remaining());
         assertEquals(1, socket.outQueue.size());
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteFirstMessageExceedingBufferFully() throws IOException {
+    void coalescingWriteFirstMessageExceedingBufferFully() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {13, 14, 15}));
         channel = new RecorderChannel(15);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(3, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteFirstMessageExceedingBufferPartially() throws IOException {
+    void coalescingWriteFirstMessageExceedingBufferPartially() throws IOException {
         ByteBuffer buffer = ByteBuffer.wrap(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14});
         socket.outQueue.add(buffer);
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {15, 16, 17}));
         channel = new RecorderChannel(11);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(0, channel.capacity);
         assertEquals(3, buffer.remaining());
         assertEquals(2, socket.outQueue.size());
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteSecondMessageExceedingBuffer() throws IOException {
+    void coalescingWriteSecondMessageExceedingBuffer() throws IOException {
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {1, 2, 3, 4}));
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}));
         channel = new RecorderChannel(20);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(16, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteRemainingDataCanBeSentAndNoNew() throws IOException {
-        socket.bulkByteBuffer.put(new byte[] {1, 2, 3, 4});
-        socket.bulkByteBuffer.flip();
-        socket.bulkReadMode = true;
+    void coalescingWriteRemainingDataCanBeSentAndNoNew() throws IOException {
+        socket.writeCoalescingBuffer.put(new byte[] {1, 2, 3, 4});
+        socket.writeCoalescingBuffer.flip();
+        socket.writeCoalescingBufferFlipped = true;
         channel = new RecorderChannel(10);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertTrue(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(6, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteRemainingDataCanBeSentAndNewFully() throws IOException {
-        socket.bulkByteBuffer.put(new byte[] {1, 2, 3, 4});
-        socket.bulkByteBuffer.flip();
-        socket.bulkReadMode = true;
+    void coalescingWriteRemainingDataCanBeSentAndNewFully() throws IOException {
+        socket.writeCoalescingBuffer.put(new byte[] {1, 2, 3, 4});
+        socket.writeCoalescingBuffer.flip();
+        socket.writeCoalescingBufferFlipped = true;
         socket.outQueue.add(ByteBuffer.wrap(new byte[] {5, 6, 7, 8}));
         channel = new RecorderChannel(20);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertTrue(finished);
         assertEquals(2, channel.buffers.size());
         assertEquals(12, channel.capacity);
-        assertFalse(socket.bulkReadMode);
+        assertFalse(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteRemainingDataCanBeSentAndNewPartially() throws IOException {
-        socket.bulkByteBuffer.put(new byte[] {1, 2, 3, 4});
-        socket.bulkByteBuffer.flip();
-        socket.bulkReadMode = true;
+    void coalescingWriteRemainingDataCanBeSentAndNewPartially() throws IOException {
+        socket.writeCoalescingBuffer.put(new byte[] {1, 2, 3, 4});
+        socket.writeCoalescingBuffer.flip();
+        socket.writeCoalescingBufferFlipped = true;
         ByteBuffer buffer = ByteBuffer.wrap(new byte[]{5, 6, 7, 8, 9, 10, 11, 12});
         socket.outQueue.add(buffer);
         channel = new RecorderChannel(10);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(2, channel.buffers.size());
         assertEquals(0, channel.capacity);
-        assertEquals(6, socket.bulkByteBuffer.position());
-        assertTrue(socket.bulkReadMode);
+        assertEquals(6, socket.writeCoalescingBuffer.position());
+        assertTrue(socket.writeCoalescingBufferFlipped);
     }
 
     @Test
-    void bulkWriteRemainingDataCannotBeSent() throws IOException {
-        socket.bulkByteBuffer.put(new byte[] {1, 2, 3, 4, 5, 6});
-        socket.bulkByteBuffer.flip();
-        socket.bulkReadMode = true;
+    void coalescingWriteRemainingDataCannotBeSent() throws IOException {
+        socket.writeCoalescingBuffer.put(new byte[] {1, 2, 3, 4, 5, 6});
+        socket.writeCoalescingBuffer.flip();
+        socket.writeCoalescingBufferFlipped = true;
         channel = new RecorderChannel(5);
 
-        boolean finished = SocketChannelIOHelper.bulkWrite(socket, channel);
+        boolean finished = SocketChannelIOHelper.coalescingWrite(socket, channel);
 
         assertFalse(finished);
         assertEquals(1, channel.buffers.size());
         assertEquals(0, channel.capacity);
-        assertEquals(5, socket.bulkByteBuffer.position());
-        assertTrue(socket.bulkReadMode);
+        assertEquals(5, socket.writeCoalescingBuffer.position());
+        assertTrue(socket.writeCoalescingBufferFlipped);
     }
 
     class RecorderChannel implements WritableByteChannel {

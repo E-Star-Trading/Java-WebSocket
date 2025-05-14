@@ -174,8 +174,8 @@ public class WebSocketImpl implements WebSocket {
    */
   private Object attachment;
 
-  public ByteBuffer bulkByteBuffer;
-  public boolean bulkReadMode;
+  public ByteBuffer writeCoalescingBuffer;
+  public boolean writeCoalescingBufferFlipped;
 
   /**
    * Creates a websocket with server role
@@ -195,7 +195,7 @@ public class WebSocketImpl implements WebSocket {
     }
 
     if (maxWriteBatchSize > 0)
-      bulkByteBuffer = ByteBuffer.allocateDirect(maxWriteBatchSize);
+      writeCoalescingBuffer = ByteBuffer.allocateDirect(maxWriteBatchSize);
   }
 
   /**
