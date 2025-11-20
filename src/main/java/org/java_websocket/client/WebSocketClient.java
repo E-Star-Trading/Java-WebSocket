@@ -61,6 +61,8 @@ import org.java_websocket.handshake.HandshakeImpl1Client;
 import org.java_websocket.handshake.Handshakedata;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.protocols.IProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A subclass must implement at least <var>onOpen</var>, <var>onClose</var>, and
@@ -70,7 +72,8 @@ import org.java_websocket.protocols.IProtocol;
  */
 public abstract class WebSocketClient extends AbstractWebSocket implements Runnable, WebSocket {
 
-  /**
+	private static final Logger log = LoggerFactory.getLogger(WebSocketClient.class);
+	/**
    * The URI this channel is supposed to connect to.
    */
   protected URI uri = null;
@@ -997,7 +1000,9 @@ public abstract class WebSocketClient extends AbstractWebSocket implements Runna
   private void handleIOException(IOException e) {
     if (e instanceof SSLException) {
       onError(e);
-    }
+    } else {
+	  log.error("IOException occurred", e);
+	}
     engine.eot();
   }
 
