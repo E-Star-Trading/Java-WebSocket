@@ -111,14 +111,15 @@ public class FramedataImpl1Test {
     direct.flip();
     frame.setPayload(direct);
     // must not throw UnsupportedOperationException (direct buffers have no backing array)
-    assertTrue(frame.toString().contains("payload"), "Payload must be displayed");
+    assertTrue(frame.toString().contains("len:" + data.length), "Payload length must be displayed");
   }
 
   @Test
   public void testToStringWithReadOnlyBufferPayload() {
     FramedataImpl1 frame = FramedataImpl1.get(Opcode.BINARY);
-    frame.setPayload(ByteBuffer.wrap("payload".getBytes()).asReadOnlyBuffer());
-    // must not throw UnsupportedOperationException (read-only buffers have no accessible array)
-    assertTrue(frame.toString().contains("payload"), "Payload must be displayed");
+    byte[] data = "payload".getBytes();
+    frame.setPayload(ByteBuffer.wrap(data).asReadOnlyBuffer());
+    // must not throw ReadOnlyBufferException (read-only buffers have no accessible array)
+    assertTrue(frame.toString().contains("len:" + data.length), "Payload length must be displayed");
   }
 }

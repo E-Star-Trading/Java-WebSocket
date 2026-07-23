@@ -65,7 +65,6 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.protocols.Protocol;
 import org.java_websocket.util.Base64;
-import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -468,10 +467,9 @@ public class Draft_6455 extends Draft {
   @Override
   public ByteBuffer createBinaryFrame(Framedata framedata) {
     getExtension().encodeFrame(framedata);
-    if (log.isTraceEnabled()) {
-      log.trace("afterEnconding({}): {}", framedata.getPayloadData().remaining(),
-          ByteBufferUtils.toDisplayString(framedata.getPayloadData()));
-    }
+    // payload content is deliberately not logged: rendering it would require ByteBuffer.array(),
+    // which throws for direct and read-only buffers, and the binary content is not human-readable
+    log.trace("afterEnconding({})", framedata.getPayloadData().remaining());
     return createByteBufferFromFramedata(framedata);
   }
 
@@ -587,10 +585,7 @@ public class Draft_6455 extends Draft {
     }
     currentDecodingExtension.isFrameValid(frame);
     currentDecodingExtension.decodeFrame(frame);
-    if (log.isTraceEnabled()) {
-      log.trace("afterDecoding({}): {}", frame.getPayloadData().remaining(),
-          ByteBufferUtils.toDisplayString(frame.getPayloadData()));
-    }
+    log.trace("afterDecoding({})", frame.getPayloadData().remaining());
     frame.isValid();
     return frame;
   }

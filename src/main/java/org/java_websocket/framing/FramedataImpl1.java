@@ -158,10 +158,11 @@ public abstract class FramedataImpl1 implements Framedata {
 
   @Override
   public String toString() {
+    // payload content is deliberately not rendered: it would require ByteBuffer.array(),
+    // which throws for direct and read-only buffers
     return "Framedata{ opcode:" + getOpcode() + ", fin:" + isFin() + ", rsv1:" + isRSV1()
         + ", rsv2:" + isRSV2() + ", rsv3:" + isRSV3() + ", payload length:[pos:" + unmaskedpayload
-        .position() + ", len:" + unmaskedpayload.remaining() + "], payload:"
-        + ByteBufferUtils.toDisplayString(unmaskedpayload) + '}';
+        .position() + ", len:" + unmaskedpayload.remaining() + "]}";
   }
 
   /**

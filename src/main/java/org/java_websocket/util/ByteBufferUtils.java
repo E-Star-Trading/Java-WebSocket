@@ -70,23 +70,4 @@ public class ByteBufferUtils {
   public static ByteBuffer getEmptyByteBuffer() {
     return ByteBuffer.allocate(0);
   }
-
-  /**
-   * Renders a buffer's remaining bytes for logging. Never calls array(), so it is safe for direct
-   * and read-only buffers, and it does not move the buffer's position.
-   *
-   * @param buf the buffer to display, may be null
-   * @return printable representation of the buffer's remaining content
-   */
-  public static String toDisplayString(ByteBuffer buf) {
-    if (buf == null) {
-      return "null";
-    }
-    if (buf.remaining() > 1000) {
-      return "too big to display";
-    }
-    byte[] bytes = new byte[buf.remaining()];
-    buf.asReadOnlyBuffer().get(bytes);
-    return new String(bytes);
-  }
 }
