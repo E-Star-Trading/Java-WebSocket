@@ -65,6 +65,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.protocols.Protocol;
 import org.java_websocket.util.Base64;
+import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -469,8 +470,7 @@ public class Draft_6455 extends Draft {
     getExtension().encodeFrame(framedata);
     if (log.isTraceEnabled()) {
       log.trace("afterEnconding({}): {}", framedata.getPayloadData().remaining(),
-          (framedata.getPayloadData().remaining() > 1000 ? "too big to display"
-              : new String(framedata.getPayloadData().array())));
+          ByteBufferUtils.toDisplayString(framedata.getPayloadData()));
     }
     return createByteBufferFromFramedata(framedata);
   }
@@ -589,8 +589,7 @@ public class Draft_6455 extends Draft {
     currentDecodingExtension.decodeFrame(frame);
     if (log.isTraceEnabled()) {
       log.trace("afterDecoding({}): {}", frame.getPayloadData().remaining(),
-          (frame.getPayloadData().remaining() > 1000 ? "too big to display"
-              : new String(frame.getPayloadData().array())));
+          ByteBufferUtils.toDisplayString(frame.getPayloadData()));
     }
     frame.isValid();
     return frame;

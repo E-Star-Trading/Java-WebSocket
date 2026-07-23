@@ -129,4 +129,46 @@ public class ByteBufferUtilsTest {
       //Fine
     }
   }
+
+  @Test
+  public void testToDisplayStringHeapBuffer() {
+    ByteBuffer buf = ByteBuffer.wrap("hello".getBytes());
+    assertEquals("hello", ByteBufferUtils.toDisplayString(buf));
+  }
+
+  @Test
+  public void testToDisplayStringDirectBuffer() {
+    byte[] data = "direct".getBytes();
+    ByteBuffer buf = ByteBuffer.allocateDirect(data.length);
+    buf.put(data);
+    buf.flip();
+    assertEquals("direct", ByteBufferUtils.toDisplayString(buf));
+  }
+
+  @Test
+  public void testToDisplayStringReadOnlyBuffer() {
+    ByteBuffer buf = ByteBuffer.wrap("readonly".getBytes()).asReadOnlyBuffer();
+    assertEquals("readonly", ByteBufferUtils.toDisplayString(buf));
+  }
+
+  @Test
+  public void testToDisplayStringRespectsPositionAndLimit() {
+    ByteBuffer buf = ByteBuffer.wrap("xxhelloxx".getBytes());
+    buf.position(2);
+    buf.limit(7);
+    assertEquals("hello", ByteBufferUtils.toDisplayString(buf));
+    assertEquals(2, buf.position(), "Position must not be moved");
+    assertEquals(7, buf.limit(), "Limit must not be changed");
+  }
+
+  @Test
+  public void testToDisplayStringBigBuffer() {
+    ByteBuffer buf = ByteBuffer.allocate(1001);
+    assertEquals("too big to display", ByteBufferUtils.toDisplayString(buf));
+  }
+
+  @Test
+  public void testToDisplayStringNull() {
+    assertEquals("null", ByteBufferUtils.toDisplayString(null));
+  }
 }

@@ -60,6 +60,7 @@ import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.interfaces.ISSLChannel;
 import org.java_websocket.protocols.IProtocol;
 import org.java_websocket.server.WebSocketServer.WebSocketWorker;
+import org.java_websocket.util.ByteBufferUtils;
 import org.java_websocket.util.Charsetfunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -732,8 +733,9 @@ public class WebSocketImpl implements WebSocket {
   }
 
   private void write(ByteBuffer buf) {
-    log.trace("write({}): {}", buf.remaining(),
-        buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
+    if (log.isTraceEnabled()) {
+      log.trace("write({}): {}", buf.remaining(), ByteBufferUtils.toDisplayString(buf));
+    }
 
     outQueue.add(buf);
     wsl.onWriteDemand(this);
