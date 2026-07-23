@@ -732,8 +732,7 @@ public class WebSocketImpl implements WebSocket {
   }
 
   private void write(ByteBuffer buf) {
-    log.trace("write({}): {}", buf.remaining(),
-        buf.remaining() > 1000 ? "too big to display" : new String(buf.array()));
+    log.trace("write({})", buf.remaining());
 
     outQueue.add(buf);
     wsl.onWriteDemand(this);

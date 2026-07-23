@@ -9,7 +9,7 @@ repositories {
 }
 
 group = 'estar'
-version = '1.6.5-ESTAR'
+version = '1.6.6-ESTAR'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 

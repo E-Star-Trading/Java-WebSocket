@@ -467,11 +467,9 @@ public class Draft_6455 extends Draft {
   @Override
   public ByteBuffer createBinaryFrame(Framedata framedata) {
     getExtension().encodeFrame(framedata);
-    if (log.isTraceEnabled()) {
-      log.trace("afterEnconding({}): {}", framedata.getPayloadData().remaining(),
-          (framedata.getPayloadData().remaining() > 1000 ? "too big to display"
-              : new String(framedata.getPayloadData().array())));
-    }
+    // payload content is deliberately not logged: rendering it would require ByteBuffer.array(),
+    // which throws for direct and read-only buffers, and the binary content is not human-readable
+    log.trace("afterEnconding({})", framedata.getPayloadData().remaining());
     return createByteBufferFromFramedata(framedata);
   }
 
@@ -587,11 +585,7 @@ public class Draft_6455 extends Draft {
     }
     currentDecodingExtension.isFrameValid(frame);
     currentDecodingExtension.decodeFrame(frame);
-    if (log.isTraceEnabled()) {
-      log.trace("afterDecoding({}): {}", frame.getPayloadData().remaining(),
-          (frame.getPayloadData().remaining() > 1000 ? "too big to display"
-              : new String(frame.getPayloadData().array())));
-    }
+    log.trace("afterDecoding({})", frame.getPayloadData().remaining());
     frame.isValid();
     return frame;
   }

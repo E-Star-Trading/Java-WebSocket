@@ -62,11 +62,9 @@ public class CloseFrameTest {
     @Test
     public void testToString() {
         CloseFrame frame = new CloseFrame();
-        String frameString = frame.toString();
-        frameString = frameString.replaceAll("payload:(.*)}", "payload: *}");
         assertEquals(
-                "Framedata{ opcode:CLOSING, fin:true, rsv1:false, rsv2:false, rsv3:false, payload length:[pos:0, len:2], payload: *}code: 1000",
-                frameString, "Frame toString must include a close code");
+                "Framedata{ opcode:CLOSING, fin:true, rsv1:false, rsv2:false, rsv3:false, payload length:[pos:0, len:2]}code: 1000",
+                frame.toString(), "Frame toString must include a close code");
     }
 
 

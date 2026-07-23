@@ -101,4 +101,25 @@ public class FramedataImpl1Test {
     assertArrayEquals( "firstsecond".getBytes(),
         frame0.getPayloadData().array(), "Payload must be equal");
   }
+
+  @Test
+  public void testToStringWithDirectBufferPayload() {
+    FramedataImpl1 frame = FramedataImpl1.get(Opcode.BINARY);
+    byte[] data = "payload".getBytes();
+    ByteBuffer direct = ByteBuffer.allocateDirect(data.length);
+    direct.put(data);
+    direct.flip();
+    frame.setPayload(direct);
+    // must not throw UnsupportedOperationException (direct buffers have no backing array)
+    assertTrue(frame.toString().contains("len:" + data.length), "Payload length must be displayed");
+  }
+
+  @Test
+  public void testToStringWithReadOnlyBufferPayload() {
+    FramedataImpl1 frame = FramedataImpl1.get(Opcode.BINARY);
+    byte[] data = "payload".getBytes();
+    frame.setPayload(ByteBuffer.wrap(data).asReadOnlyBuffer());
+    // must not throw ReadOnlyBufferException (read-only buffers have no accessible array)
+    assertTrue(frame.toString().contains("len:" + data.length), "Payload length must be displayed");
+  }
 }
