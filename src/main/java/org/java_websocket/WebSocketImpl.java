@@ -613,7 +613,9 @@ public class WebSocketImpl implements WebSocket {
 
   public void eot() {
     if (readyState == ReadyState.NOT_YET_CONNECTED) {
-	  log.error("EOT occurred initializing connection", new RuntimeException());
+      if (log.isDebugEnabled()) {
+        log.debug("EOT occurred initializing connection", new RuntimeException());
+      }
       closeConnection(CloseFrame.NEVER_CONNECTED, true);
     } else if (flushandclosestate) {
       closeConnection(closecode, closemessage, closedremotely);
